@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src https://api.open-meteo.com; object-src 'none'; base-uri 'none'">
+  <title>Home</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stage">
+    <div class="wall" aria-hidden="true">
+      <div class="aurora">
+        <span class="orb orb-a"></span>
+        <span class="orb orb-b"></span>
+        <span class="orb orb-c"></span>
+      </div>
+      <div class="wall-layer" id="wallA"></div>
+      <div class="wall-layer" id="wallB"></div>
+      <div class="scrim"></div>
+    </div>
+
+    <div class="content">
+      <header class="top">
+        <div class="clock">
+          <div class="time" id="time"></div>
+          <div class="date" id="date"></div>
+        </div>
+        <div class="weather" id="weather" hidden>
+          <div class="weather-now">
+            <span class="weather-icon" id="weatherIcon"></span>
+            <span class="weather-temp" id="weatherTemp"></span>
+          </div>
+          <div class="weather-text" id="weatherText"></div>
+          <div class="weather-meta" id="weatherMeta"></div>
+        </div>
+      </header>
+
+      <main class="rows" id="home">
+        <section class="row">
+          <h2 class="row-title">Apps</h2>
+          <div class="track" id="appsRow"></div>
+        </section>
+        <section class="row">
+          <h2 class="row-title">Watch</h2>
+          <div class="track" id="inputsRow"></div>
+        </section>
+        <nav class="dock" id="dock"></nav>
+      </main>
+    </div>
+
+    <div class="overlay" id="allApps" hidden>
+      <div class="overlay-head">
+        <h1 class="overlay-title">All apps</h1>
+        <span class="overlay-hint">Back to close</span>
+      </div>
+      <div class="overlay-scroll" id="allAppsScroll">
+        <div class="grid" id="allAppsGrid"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

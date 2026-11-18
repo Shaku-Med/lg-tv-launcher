@@ -1,0 +1,12 @@
+# build output
+*.ipk
+lg-launcher-dist/
+dist/
+node_modules/
+
+# your own photos stay on your machine
+wallpapers/*
+!wallpapers/.gitkeep
+
+.DS_Store
+Thumbs.db
