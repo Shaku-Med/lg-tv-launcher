@@ -82,7 +82,7 @@ Edit `config.js`:
   (CC0) has most brands at `https://cdn.jsdelivr.net/npm/simple-icons@16.38.0/icons/<slug>.svg`. Ask before
   downloading, then check the SVG contains only shapes (no `<script>`, `on*=` handlers, `href`, `foreignObject`).
   Prime Video and Disney+ are not in Simple Icons; those tiles show the typeset name.
-- `theme`, `clock24h`, `ambientMinutes`, `motion`, `wallpapers` (files the user puts in `wallpapers/`),
+- `theme` (dark, light, auto, midnight, ocean, forest, sunset, grape, rose, sand, sky, mint; schemes live in `style.css` as `[data-theme]` token blocks, listed in `THEME_LIST` in `app.js`), `layout` (classic, centered, dashboard, minimal; CSS under `[data-layout]` in `style.css`, previews in `LAYOUT_LIST` in `app.js`), `clock24h`, `ambientMinutes`, `motion`, `wallpapers` (files the user puts in `wallpapers/`),
   `wallpaperSeconds`, `slideshowSeconds`.
 - Photo slideshow: `python tools/make_wallpapers.py "<photo folder>"` (needs Pillow; ask before `pip install pillow`).
   It writes full screen 1920x1080 slides plus `wallpapers/list.js`, strips EXIF/GPS, and everything it writes is

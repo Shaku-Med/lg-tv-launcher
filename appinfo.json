@@ -1,6 +1,6 @@
 {
   "id": "dev.homeboard.launcher",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "vendor": "Homeboard",
   "type": "web",
   "main": "index.html",

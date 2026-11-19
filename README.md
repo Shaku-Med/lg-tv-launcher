@@ -30,7 +30,11 @@ Runs on LG TVs with **webOS 4 or newer (2018 and later)**. Tested on webOS 4.
 - Your own photos as wallpapers with a slow crossfade and gentle zoom.
 - Ambient mode after a few idle minutes: the tiles fade away and your photos play full screen. Any button wakes it.
 - On a rooted TV it can be the screen the TV opens to every time it turns on.
-- Dark, light or auto theme, switchable from the launcher.
+- Twelve themes: Graphite, Paper and Auto, plus colored schemes (Midnight, Ocean, Forest, Sunset, Grape, Rose,
+  Sand, Sky, Mint). Open **Theme** on the launcher, move over the schemes to preview them live, press OK to keep
+  one or Back to cancel.
+- Four layouts from the **Layout** button: Classic, Centered (big clock in the middle), Dashboard (clock on the left,
+  apps as a grid) and Minimal (small clock, compact tiles).
 - Monochrome logos that follow the theme. Apps without a logo get a clean typeset name.
 - Everything is set in one file, `config.js`.
 
@@ -107,7 +111,7 @@ ares-package lg-tv-launcher -o lg-tv-launcher-dist -e README.md -e docs -e .clau
 ```
 
 ```bash
-ares-install --device tv lg-tv-launcher-dist/dev.homeboard.launcher_1.0.1_all.ipk
+ares-install --device tv lg-tv-launcher-dist/dev.homeboard.launcher_1.0.3_all.ipk
 ```
 
 The number in the file name is the `version` in `appinfo.json`.
@@ -133,7 +137,8 @@ Everything lives in [`config.js`](config.js):
 | `weather.units` | `"fahrenheit"` or `"celsius"` |
 | `clock24h` | `true` for a 24 hour clock |
 | `motion` | `false` turns off all animation |
-| `theme` | `"dark"`, `"light"` or `"auto"` (light from 7:00 to 19:00) |
+| `theme` | Starting theme: `"dark"`, `"light"`, `"auto"` (light from 7:00 to 19:00), `"midnight"`, `"ocean"`, `"forest"`, `"sunset"`, `"grape"`, `"rose"`, `"sand"`, `"sky"` or `"mint"`. A theme picked on the TV wins. |
+| `layout` | Starting layout: `"classic"`, `"centered"`, `"dashboard"` or `"minimal"`. A layout picked on the TV wins. |
 | `ambientMinutes` | Idle minutes before ambient mode. `0` turns it off. |
 | `wallpapers` | File names of photos you put in `wallpapers/` (1920x1080 JPG works best) |
 | `wallpaperSeconds` | How often the wallpaper changes behind the home screen |
@@ -239,7 +244,7 @@ After the restart the password is gone, and only a computer with that key file c
 parent folder after packaging (step 4 above):
 
 ```bash
-python lg-tv-launcher/tools/rooted/make_bundle.py lg-tv-launcher-dist/dev.homeboard.launcher_1.0.1_all.ipk homeboard-setup.sh
+python lg-tv-launcher/tools/rooted/make_bundle.py lg-tv-launcher-dist/dev.homeboard.launcher_1.0.3_all.ipk homeboard-setup.sh
 ```
 
 ```bash

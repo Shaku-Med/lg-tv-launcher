@@ -14,8 +14,12 @@ window.LAUNCHER_CONFIG = {
   // Drifting background light, slow photo zoom and entrance animations. false = everything still.
   motion: true,
 
-  // "dark", "light" or "auto" (light from 7:00 to 19:00). Can also be switched from the launcher.
+  // "dark", "light", "auto" (light from 7:00 to 19:00), or a color scheme: "midnight", "ocean",
+  // "forest", "sunset", "grape", "rose", "sand", "sky", "mint". The Theme button on the launcher overrides this.
   theme: "dark",
+
+  // "classic", "centered", "dashboard" or "minimal". The Layout button on the launcher overrides this.
+  layout: "classic",
 
   // Minutes without a button press before the screen fades to clock + wallpaper. 0 turns it off.
   ambientMinutes: 3,

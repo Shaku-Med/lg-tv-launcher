@@ -6,7 +6,43 @@
   var APP_ID_RE = /^[A-Za-z0-9._-]{1,128}$/;
   var WALL_RE = /^[A-Za-z0-9 _.-]{1,80}\.(jpe?g|png|webp)$/i;
   var ICON_RE = /^[a-z0-9-]{1,40}$/;
-  var THEMES = ["dark", "light", "auto"];
+  var THEME_LIST = [
+    { id: "dark", name: "Graphite" },
+    { id: "light", name: "Paper" },
+    { id: "auto", name: "Auto", halves: ["light", "dark"] },
+    { id: "midnight", name: "Midnight" },
+    { id: "ocean", name: "Ocean" },
+    { id: "forest", name: "Forest" },
+    { id: "sunset", name: "Sunset" },
+    { id: "grape", name: "Grape" },
+    { id: "rose", name: "Rose" },
+    { id: "sand", name: "Sand" },
+    { id: "sky", name: "Sky" },
+    { id: "mint", name: "Mint" }
+  ];
+  var THEMES = THEME_LIST.map(function (t) { return t.id; });
+
+  // blocks: [kind, left%, top%, width%, height%] for the little preview on each card.
+  var LAYOUT_LIST = [
+    { id: "classic", name: "Classic", blocks: [
+      ["clock", 6, 10, 26, 13], ["text", 6, 28, 30, 5],
+      ["focus", 6, 52, 16, 17], ["tile", 25, 52, 16, 17], ["tile", 44, 52, 16, 17], ["tile", 63, 52, 16, 17], ["tile", 82, 52, 16, 17],
+      ["chip", 6, 78, 12, 8], ["chip", 20, 78, 12, 8], ["chip", 34, 78, 12, 8]] },
+    { id: "centered", name: "Centered", blocks: [
+      ["clock", 33, 12, 34, 16], ["text", 38, 33, 24, 5],
+      ["focus", 15, 52, 15, 15], ["tile", 33, 52, 15, 15], ["tile", 51, 52, 15, 15], ["tile", 69, 52, 15, 15],
+      ["chip", 30, 76, 12, 8], ["chip", 44, 76, 12, 8], ["chip", 58, 76, 12, 8]] },
+    { id: "dashboard", name: "Dashboard", blocks: [
+      ["clock", 6, 12, 26, 14], ["text", 6, 31, 22, 5], ["text", 6, 41, 14, 5],
+      ["focus", 40, 12, 17, 20], ["tile", 60, 12, 17, 20], ["tile", 80, 12, 17, 20],
+      ["tile", 40, 40, 17, 20], ["tile", 60, 40, 17, 20], ["tile", 80, 40, 17, 20],
+      ["chip", 40, 72, 12, 8], ["chip", 54, 72, 12, 8], ["chip", 68, 72, 12, 8]] },
+    { id: "minimal", name: "Minimal", blocks: [
+      ["clock", 6, 10, 16, 9], ["text", 6, 23, 20, 4],
+      ["focus", 6, 66, 10, 13], ["tile", 18, 66, 10, 13], ["tile", 30, 66, 10, 13], ["tile", 42, 66, 10, 13],
+      ["tile", 54, 66, 10, 13], ["tile", 66, 66, 10, 13], ["chip", 6, 84, 9, 6], ["chip", 17, 84, 9, 6]] }
+  ];
+  var LAYOUTS = LAYOUT_LIST.map(function (l) { return l.id; });
   var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ENTER: 13, BACK: 461, ESC: 27 };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -46,6 +82,7 @@
     clock24h: raw.clock24h === true,
     motion: raw.motion !== false,
     theme: THEMES.indexOf(raw.theme) >= 0 ? raw.theme : "dark",
+    layout: LAYOUTS.indexOf(raw.layout) >= 0 ? raw.layout : "classic",
     ambientMs: (num(raw.ambientMinutes, 0, 120) || 0) * 60000,
     wallpapers: (Array.isArray(raw.wallpapers) ? raw.wallpapers : [])
       .concat(Array.isArray(window.LAUNCHER_WALLPAPERS) ? window.LAUNCHER_WALLPAPERS : []).filter(function (w) {
@@ -166,6 +203,7 @@
     hdmi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5h18v4l-2.5 3h-13L3 12.5z"/><path d="M7.5 11.5h9"/></svg>',
     grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>',
     theme: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg>',
+    layout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 10h17M10 10v10"/></svg>',
     gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>',
     moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
@@ -251,6 +289,7 @@
   }
 
   var themePill = null;
+  var layoutPill = null;
 
   function renderHome() {
     var keepFocus = document.activeElement;
@@ -275,10 +314,13 @@
     });
 
     dock.appendChild(makePill("All apps", "grid", openAllApps));
-    themePill = makePill("", "theme", cycleTheme);
+    themePill = makePill("", "theme", openThemePicker);
     dock.appendChild(themePill);
+    layoutPill = makePill("", "layout", openLayoutPicker);
+    dock.appendChild(layoutPill);
     dock.appendChild(makePill("TV settings", "gear", openTvSettings));
     updateThemeLabel();
+    updateLayoutLabel();
 
     var after = focusables($("home"));
     var target = after[keepIndex] || after[0];
@@ -326,6 +368,7 @@
   }
 
   function activeLayer() {
+    if (pickerOpen) return $("pickerSheet");
     return overlayOpen ? $("allApps") : $("home");
   }
 
@@ -437,28 +480,163 @@
     return THEMES.indexOf(stored) >= 0 ? stored : CFG.theme;
   }
 
+  function themeInfo(id) {
+    return THEME_LIST[Math.max(0, THEMES.indexOf(id))];
+  }
+
+  function resolveTheme(id) {
+    if (id !== "auto") return id;
+    var h = new Date().getHours();
+    return h >= 7 && h < 19 ? "light" : "dark";
+  }
+
+  var previewTheme = null; // set while the picker is open
+
   function applyTheme() {
-    var mode = currentTheme();
-    var resolved = mode;
-    if (mode === "auto") {
-      var h = new Date().getHours();
-      resolved = h >= 7 && h < 19 ? "light" : "dark";
-    }
-    document.documentElement.setAttribute("data-theme", resolved);
+    var id = previewTheme || currentTheme();
+    document.documentElement.setAttribute("data-theme", resolveTheme(id));
   }
 
   function updateThemeLabel() {
     if (!themePill) return;
-    var mode = currentTheme();
-    themePill._label.textContent = "Theme: " + mode.charAt(0).toUpperCase() + mode.slice(1);
+    themePill._label.textContent = "Theme: " + themeInfo(currentTheme()).name;
   }
 
-  function cycleTheme() {
-    var next = THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length];
-    save("hb-theme", next);
-    applyTheme();
-    updateThemeLabel();
+  // ---------- layout ----------
+
+  function currentLayout() {
+    var stored = load("hb-layout");
+    return LAYOUTS.indexOf(stored) >= 0 ? stored : CFG.layout;
   }
+
+  var previewLayout = null;
+
+  function applyLayout() {
+    stage.setAttribute("data-layout", previewLayout || currentLayout());
+  }
+
+  function updateLayoutLabel() {
+    if (!layoutPill) return;
+    layoutPill._label.textContent = "Layout: " + LAYOUT_LIST[LAYOUTS.indexOf(currentLayout())].name;
+  }
+
+  // Each layout preview is a few blocks placed in percent of a 16:9 card, colored by the theme.
+  function makeLayoutPreview(layout) {
+    var box = el("span", "swatch");
+    var half = el("span", "swatch-half");
+    layout.blocks.forEach(function (b) {
+      var block = el("span", "lw lw-" + b[0]);
+      block.style.left = b[1] + "%";
+      block.style.top = b[2] + "%";
+      block.style.width = b[3] + "%";
+      block.style.height = b[4] + "%";
+      half.appendChild(block);
+    });
+    box.appendChild(half);
+    return box;
+  }
+
+  // ---------- picker sheet (theme + layout) ----------
+
+  var pickerOpen = false;
+  var pickerKind = null;
+  var pickerReturnFocus = null;
+
+  var PICKERS = {
+    theme: {
+      title: "Theme",
+      list: THEME_LIST,
+      current: function () { return currentTheme(); },
+      preview: function (id) { previewTheme = id; applyTheme(); },
+      reset: function () { previewTheme = null; applyTheme(); },
+      keep: function (id) { save("hb-theme", id); },
+      face: function (item) { return makeThemeSwatch(item); },
+      relabel: function () { updateThemeLabel(); }
+    },
+    layout: {
+      title: "Layout",
+      list: LAYOUT_LIST,
+      current: function () { return currentLayout(); },
+      preview: function (id) { previewLayout = id; applyLayout(); },
+      reset: function () { previewLayout = null; applyLayout(); },
+      keep: function (id) { save("hb-layout", id); },
+      face: function (item) { return makeLayoutPreview(item); },
+      relabel: function () { updateLayoutLabel(); }
+    }
+  };
+
+  function makeThemeSwatch(theme) {
+    var swatch = el("span", "swatch");
+    (theme.halves || [theme.id]).forEach(function (id) { swatch.appendChild(makeSwatchHalf(id)); });
+    return swatch;
+  }
+
+  function makeSwatchHalf(themeId) {
+    var half = el("span", "swatch-half");
+    half.setAttribute("data-theme", themeId);
+    half.appendChild(el("span", "sw-clock"));
+    half.appendChild(el("span", "sw-date"));
+    var row = el("span", "sw-row");
+    row.appendChild(el("span", "sw-tile is-focus"));
+    row.appendChild(el("span", "sw-tile"));
+    row.appendChild(el("span", "sw-tile"));
+    half.appendChild(row);
+    return half;
+  }
+
+  function makePickCard(conf, item, current) {
+    var isCurrent = item.id === current;
+    var btn = el("button", "pick-card focusable" + (isCurrent ? " is-current" : ""));
+    btn.type = "button";
+    btn.setAttribute("aria-label", item.name + (isCurrent ? ", current" : ""));
+    btn.appendChild(conf.face(item));
+    btn.appendChild(el("span", "pick-name", item.name));
+    btn.addEventListener("focus", function () {
+      if (pickerOpen && PICKERS[pickerKind] === conf) conf.preview(item.id);
+    });
+    btn._activate = function () { closePicker(item.id); };
+    return btn;
+  }
+
+  function openPicker(kind) {
+    var conf = PICKERS[kind];
+    if (!conf || pickerOpen) return;
+    var current = conf.current();
+    var grid = $("pickerGrid");
+    grid.innerHTML = "";
+    var focusTarget = null;
+    conf.list.forEach(function (item) {
+      var card = makePickCard(conf, item, current);
+      if (item.id === current) focusTarget = card;
+      grid.appendChild(card);
+    });
+    $("pickerTitle").textContent = conf.title;
+    pickerReturnFocus = document.activeElement;
+    pickerKind = kind;
+    pickerOpen = true;
+    stage.classList.add("picking");
+    $("pickerSheet").hidden = false;
+    focusEl(focusTarget || grid.firstChild);
+  }
+
+  // keep: the id to save, or nothing to cancel and go back to what was saved.
+  function closePicker(keep) {
+    if (!pickerOpen) return;
+    var conf = PICKERS[pickerKind];
+    pickerOpen = false;
+    pickerKind = null;
+    var valid = conf.list.some(function (item) { return item.id === keep; });
+    if (keep && valid) conf.keep(keep);
+    conf.reset();
+    conf.relabel();
+    $("pickerSheet").hidden = true;
+    stage.classList.remove("picking");
+    if (pickerReturnFocus && document.body.contains(pickerReturnFocus)) focusEl(pickerReturnFocus);
+    else focusEl(focusables($("home"))[0]);
+  }
+
+  function openThemePicker() { openPicker("theme"); }
+  function openLayoutPicker() { openPicker("layout"); }
 
   // ---------- weather ----------
 
@@ -568,6 +746,7 @@
     idleTimer = setTimeout(enterAmbient, CFG.ambientMs);
   }
   function enterAmbient() {
+    if (pickerOpen) closePicker();
     if (overlayOpen) closeAllApps();
     ambient = true;
     stage.classList.add("ambient");
@@ -602,7 +781,8 @@
       if (node && typeof node._activate === "function") node._activate();
     } else if (code === KEY.BACK || code === KEY.ESC) {
       e.preventDefault();
-      if (overlayOpen) closeAllApps();
+      if (pickerOpen) closePicker();
+      else if (overlayOpen) closeAllApps();
     }
   });
 
@@ -627,6 +807,7 @@
 
   // Pressing Home -> launcher again while it's already running.
   document.addEventListener("webOSRelaunch", function () {
+    if (pickerOpen) closePicker();
     if (overlayOpen) closeAllApps();
     if (ambient) exitAmbient();
   });
@@ -658,6 +839,7 @@
     stage.classList.add("still");
   }
   applyTheme();
+  applyLayout();
   tickClock();
   setInterval(tickClock, 1000);
   renderHome();
