@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="sheen" cx="0.28" cy="0.18" r="0.95">
+      <stop offset="0" stop-color="#2c2c31"/>
+      <stop offset="0.55" stop-color="#18181b"/>
+      <stop offset="1" stop-color="#111113"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="lift" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#sheen)"/>
+  <rect x="2" y="2" width="508" height="508" rx="110" fill="none" stroke="url(#edge)" stroke-width="4"/>
+
+  <path d="M140 210 L256 116 L372 210" fill="none" stroke="#fafafa" stroke-width="30"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="160" y="232" width="88" height="88" rx="22" fill="#fafafa" filter="url(#lift)"/>
+  <rect x="264" y="232" width="88" height="88" rx="22" fill="#3f3f46"/>
+  <rect x="160" y="336" width="88" height="88" rx="22" fill="#3f3f46"/>
+  <rect x="264" y="336" width="88" height="88" rx="22" fill="#3f3f46"/>
+</svg>

@@ -2,7 +2,7 @@
 
 A clean, modern home screen for LG webOS TVs. Big clock, live weather, your apps as large tiles,
 quick access to Live TV and HDMI inputs, a full app drawer, dark / light / auto themes, slow drifting
-background light, and an ambient mode that fades to clock + wallpaper when nobody is pressing buttons.
+background light, and an ambient mode that turns into a full screen photo slideshow when nobody is pressing buttons.
 
 ![Homeboard on a TV](docs/preview.png)
 
@@ -28,7 +28,8 @@ Runs on LG TVs with **webOS 4 or newer (2018 and later)**. Tested on webOS 4.
 - Remote friendly: arrows to move, OK to open, Back closes the drawer. The Magic Remote pointer works too.
 - Weather from [Open-Meteo](https://open-meteo.com) (free, no API key). Your location is rounded to about 1 km.
 - Your own photos as wallpapers with a slow crossfade and gentle zoom.
-- Ambient mode after a few idle minutes. Any button wakes it.
+- Ambient mode after a few idle minutes: the tiles fade away and your photos play full screen. Any button wakes it.
+- On a rooted TV it can be the screen the TV opens to every time it turns on.
 - Dark, light or auto theme, switchable from the launcher.
 - Monochrome logos that follow the theme. Apps without a logo get a clean typeset name.
 - Everything is set in one file, `config.js`.
@@ -102,12 +103,14 @@ ares-device --device tv --system-info
 From the folder that **contains** this repo folder:
 
 ```bash
-ares-package lg-tv-launcher -o lg-tv-launcher-dist -e README.md -e docs -e .claude -e LICENSE -e .gitignore -e .git
+ares-package lg-tv-launcher -o lg-tv-launcher-dist -e README.md -e docs -e .claude -e LICENSE -e .gitignore -e .git -e tools
 ```
 
 ```bash
-ares-install --device tv lg-tv-launcher-dist/dev.homeboard.launcher_1.0.0_all.ipk
+ares-install --device tv lg-tv-launcher-dist/dev.homeboard.launcher_1.0.1_all.ipk
 ```
+
+The number in the file name is the `version` in `appinfo.json`.
 
 ```bash
 ares-launch --device tv dev.homeboard.launcher
@@ -133,6 +136,8 @@ Everything lives in [`config.js`](config.js):
 | `theme` | `"dark"`, `"light"` or `"auto"` (light from 7:00 to 19:00) |
 | `ambientMinutes` | Idle minutes before ambient mode. `0` turns it off. |
 | `wallpapers` | File names of photos you put in `wallpapers/` (1920x1080 JPG works best) |
+| `wallpaperSeconds` | How often the wallpaper changes behind the home screen |
+| `slideshowSeconds` | How often photos change in ambient mode |
 | `apps` | Your main row: `{ id, title, icon }` |
 | `inputs` | The Watch row: Live TV and HDMI |
 
@@ -164,21 +169,101 @@ curl -o icons/plex.svg https://cdn.jsdelivr.net/npm/simple-icons@16.38.0/icons/p
 
 Then add `icon: "plex"` to that app in `config.js`. No icon means the app's name is shown on the tile.
 
+### Your photos as a slideshow
+
+Point the photo tool at a folder of pictures (needs Python and `pip install pillow`):
+
+```bash
+python tools/make_wallpapers.py "path/to/your/photos"
+```
+
+It turns them into 1920x1080 slides that fill the whole screen. Wide photos get a slide each, and tall phone
+photos are set two or three side by side so nothing is cropped to a thin strip. Location and camera metadata
+are removed. The slides and `wallpapers/list.js` go into `wallpapers/`, which is gitignored, so your photos never
+end up in a commit. Reinstall the app afterwards.
+
+### App icon and splash
+
+The app icon and splash screen are drawn as SVG in [`tools/icon/`](tools/icon). After editing them, rebuild the
+PNGs (needs Edge or Chrome, plus ffmpeg):
+
+```bash
+python tools/icon/make_icons.py
+```
+
 ## Updating
 
 After changing `config.js`, icons or wallpapers, run the three commands from step 4 again.
+If the TV keeps showing the old app icon, raise `version` in `appinfo.json` before packaging.
 
 ## Rooted TVs
 
-If your TV can be rooted (check [cani.rootmy.tv](https://cani.rootmy.tv)) and you've installed the
-[Homebrew Channel](https://www.webosbrew.org):
+Rooting is your call and it's at your own risk. Check whether your firmware can be rooted at
+[cani.rootmy.tv](https://cani.rootmy.tv) and follow the [webOS Homebrew](https://www.webosbrew.org) guide.
+Once the **Homebrew Channel** is installed, Homeboard can stop being "an app" and become the screen your TV
+opens to.
 
-- Install the same `.ipk` through Homebrew Channel. It never expires.
-- Install **LG Input Hook** from Homebrew Channel and point a remote button at
-  `luna-send -n 1 luna://com.webos.applicationManager/launch '{"id":"dev.homeboard.launcher"}'`.
-  Remap **Home** itself and this becomes your real home screen. Try a spare button first.
+Two things that catch people out while rooting:
 
-An official LG firmware update removes root, so turn off automatic updates on a rooted TV.
+- **Uninstall the LG Developer Mode app before you reboot.** If it's still installed, it wipes the folder
+  Homebrew Channel lives in and you have to root again.
+- Turn **Quick Start+** off while rooting. You can turn it back on when you're done.
+
+### 1. Secure SSH first
+
+Homebrew Channel turns on an SSH server for root, and until you add a key its password is `alpine`, which
+everyone knows. Anyone on your Wi-Fi could log in. `passwd` doesn't work because `/etc` is read only. Use a key
+instead. Once a key is in place, Homebrew stops setting the password at boot.
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/homeboard_tv
+```
+
+Copy the public key to the TV (this is the last time you'll type `alpine`):
+
+```bash
+ssh root@<TV_IP> "mkdir -p /home/root/.ssh && cat >> /home/root/.ssh/authorized_keys && chmod 600 /home/root/.ssh/authorized_keys" < ~/.ssh/homeboard_tv.pub
+```
+
+Check that the key works, then restart the TV:
+
+```bash
+ssh -i ~/.ssh/homeboard_tv root@<TV_IP> reboot
+```
+
+After the restart the password is gone, and only a computer with that key file can get in.
+
+### 2. Make it the startup screen
+
+[`tools/rooted/`](tools/rooted) builds a one shot setup script with the app inside it. Run it from the repo's
+parent folder after packaging (step 4 above):
+
+```bash
+python lg-tv-launcher/tools/rooted/make_bundle.py lg-tv-launcher-dist/dev.homeboard.launcher_1.0.1_all.ipk homeboard-setup.sh
+```
+
+```bash
+ssh -i ~/.ssh/homeboard_tv root@<TV_IP> sh -s < homeboard-setup.sh
+```
+
+On Windows PowerShell, wrap any command that uses `<` in `cmd /c "..."`, because PowerShell has no `<` redirect.
+
+It should end with `INSTALLED`, `WATCHER RUNNING` and `== done`. The script:
+
+- installs the app permanently (no Dev Mode session to extend, nothing expires);
+- adds `/var/lib/webosbrew/init.d/homeboard`, which Homebrew Channel runs at every boot. It opens Homeboard about
+  20 seconds after a cold start and again every time the TV wakes from standby.
+
+To undo it, delete `/var/lib/webosbrew/init.d/homeboard` on the TV and restart.
+
+### 3. Optional: the Home button
+
+Install **LG Input Hook** from Homebrew Channel and point a remote button at
+`luna-send -n 1 luna://com.webos.applicationManager/launch '{"id":"dev.homeboard.launcher"}'`.
+Try a spare button first before remapping **Home** itself.
+
+An official LG firmware update can remove root, so turn off automatic updates on a rooted TV. The app stays
+installed either way, but the startup script may stop running.
 
 ## Clean up LG's own home screen
 
@@ -186,7 +271,7 @@ Menu names vary a little between webOS versions. Look under **Settings → Gener
 
 - **Home Settings**: turn off *Home Auto Launch*, *Home Promotion* and *Content Recommendation*.
 - **User Agreements**: turn off advertising and viewing information.
-- **Quick Start+**: on, so the TV wakes up fast.
+- **Quick Start+**: on, so the TV wakes up fast (but off while rooting).
 
 ## Troubleshooting
 
@@ -201,6 +286,10 @@ permission, which is already declared in `appinfo.json`.
 **Why bundled icons instead of the TV's own?** LG blocks sideloaded apps from listing installed apps
 (`listLaunchPoints` is denied), and Developer Mode apps can't read other apps' files. On a rooted TV the
 launcher uses the TV's real icons automatically when it's allowed to.
+
+**Rooted: the launcher doesn't open after power on**: SSH in and run `cat /var/run/homeboard-watch.log`. It lists
+the power states the startup script saw. If it's empty, check that `/var/lib/webosbrew/init.d/homeboard` exists;
+`sh /var/lib/webosbrew/init.d/homeboard` starts it by hand.
 
 **Debugging on the TV**: `ares-inspect --device tv --app dev.homeboard.launcher --open` opens DevTools for the running launcher.
 

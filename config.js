@@ -22,8 +22,11 @@ window.LAUNCHER_CONFIG = {
 
   // Put your photos in the wallpapers folder and list their file names here.
   // 1920x1080 JPGs work best. Empty list = clean solid background.
+  // Or run tools/make_wallpapers.py on a photo folder and they're picked up automatically.
   wallpapers: [],
   wallpaperSeconds: 60,
+  // How fast photos change once the screen goes into ambient (slideshow) mode.
+  slideshowSeconds: 12,
 
   // Your main row. "id" is the webOS app id, "icon" is a file name in icons/ (without .svg).
   // No icon = the app name is shown on the tile.

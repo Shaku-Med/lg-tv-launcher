@@ -95,13 +95,16 @@ button {
   opacity: 0;
   transition: opacity 2400ms ease-in-out;
 }
-.wall-layer.is-visible {
-  opacity: 1;
-  animation: drift-photo 48s ease-in-out infinite alternate;
+.wall-layer.is-visible { opacity: 1; }
+.wall-layer.zoom-a { animation: zoom-a 26s ease-out forwards; }
+.wall-layer.zoom-b { animation: zoom-b 26s ease-out forwards; }
+@keyframes zoom-a {
+  from { transform: scale(1.0) translate3d(0, 0, 0); }
+  to { transform: scale(1.08) translate3d(-1.2%, -0.8%, 0); }
 }
-@keyframes drift-photo {
-  from { transform: scale(1.02) translate3d(0, 0, 0); }
-  to { transform: scale(1.1) translate3d(-1.5%, -1%, 0); }
+@keyframes zoom-b {
+  from { transform: scale(1.08) translate3d(1.2%, -0.6%, 0); }
+  to { transform: scale(1.0) translate3d(0, 0, 0); }
 }
 
 /* Slow drifting light when there's no wallpaper. Orbs are rendered small and scaled up
@@ -467,6 +470,13 @@ button {
   pointer-events: none;
 }
 .ambient .top { transform: translateY(560px) scale(1.25); }
+/* Photo slideshow: photos at full brightness, a soft shade only behind the clock */
+.ambient:not(.no-wall) .top { transform: translateY(700px) scale(0.85); }
+.ambient:not(.no-wall) .scrim {
+  background: linear-gradient(to top, var(--scrim) 0%, rgba(0, 0, 0, 0) 38%);
+}
+.ambient:not(.no-wall) .time,
+.ambient:not(.no-wall) .date { text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45); }
 .ambient .weather { opacity: 0; }
 .ambient .scrim { background: var(--scrim-ambient); }
 .ambient.no-wall .scrim { background: transparent; }

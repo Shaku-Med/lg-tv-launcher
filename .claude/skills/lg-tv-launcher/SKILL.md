@@ -1,6 +1,6 @@
 ---
 name: lg-tv-launcher
-description: Install, customize, update or troubleshoot the Homeboard custom home screen on an LG webOS TV through Developer Mode. Use when the user wants to put this launcher on their LG TV, change its apps, icons, weather, wallpapers or theme, reinstall it after edits, or fix "No matched device", getkey or app launch problems.
+description: Install, customize, update or troubleshoot the Homeboard custom home screen on an LG webOS TV through Developer Mode, or make it the TV's startup screen on a rooted TV. Use when the user wants to put this launcher on their LG TV, change its apps, icons, weather, wallpapers, photo slideshow or theme, reinstall it after edits, make it open on power on, secure root SSH, or fix "No matched device", getkey or app launch problems.
 ---
 
 # Install Homeboard on an LG TV
@@ -82,7 +82,13 @@ Edit `config.js`:
   (CC0) has most brands at `https://cdn.jsdelivr.net/npm/simple-icons@16.38.0/icons/<slug>.svg`. Ask before
   downloading, then check the SVG contains only shapes (no `<script>`, `on*=` handlers, `href`, `foreignObject`).
   Prime Video and Disney+ are not in Simple Icons; those tiles show the typeset name.
-- `theme`, `clock24h`, `ambientMinutes`, `motion`, `wallpapers` (files the user puts in `wallpapers/`).
+- `theme`, `clock24h`, `ambientMinutes`, `motion`, `wallpapers` (files the user puts in `wallpapers/`),
+  `wallpaperSeconds`, `slideshowSeconds`.
+- Photo slideshow: `python tools/make_wallpapers.py "<photo folder>"` (needs Pillow; ask before `pip install pillow`).
+  It writes full screen 1920x1080 slides plus `wallpapers/list.js`, strips EXIF/GPS, and everything it writes is
+  gitignored. These are the user's private photos: never commit them, upload them, or open them more than needed.
+- App icon / splash: SVG sources in `tools/icon/`, rebuilt with `python tools/icon/make_icons.py` (Edge or Chrome
+  plus ffmpeg).
 
 Validate after editing: `node --check config.js`.
 
@@ -94,10 +100,12 @@ Launching apps only works on the TV.
 Run from the folder that contains the repo folder (`<repo>` = its folder name):
 
 ```bash
-ares-package <repo> -o <repo>-dist -e README.md -e docs -e .claude -e LICENSE -e .gitignore -e .git
-ares-install --device tv <repo>-dist/dev.homeboard.launcher_1.0.0_all.ipk
+ares-package <repo> -o <repo>-dist -e README.md -e docs -e .claude -e LICENSE -e .gitignore -e .git -e tools
+ares-install --device tv <repo>-dist/dev.homeboard.launcher_<version>_all.ipk
 ares-launch --device tv dev.homeboard.launcher
 ```
+
+`<version>` is the `version` in `appinfo.json`. Bump it when the TV keeps showing a cached old icon.
 
 Tell the user it appears as **Home** in the app bar and to move it to the front.
 Ask them to confirm on the TV: clock, Apps row with logos, Watch row, and that OK on a tile opens the app.
@@ -125,7 +133,29 @@ dev apps stop launching. Tell the user to press **Extend** in the Developer Mode
 
 ## Rooted TVs (optional)
 
-If https://cani.rootmy.tv says their firmware is rootable and they want it: install the `.ipk` via Homebrew Channel
-(no expiry), then use **LG Input Hook** to map a remote button to
-`luna-send -n 1 luna://com.webos.applicationManager/launch '{"id":"dev.homeboard.launcher"}'`.
-Rooting is the user's decision; explain that firmware updates remove root and there is some risk.
+Rooting is the user's decision on their own device. Explain the risk once, then help without lecturing.
+Check https://cani.rootmy.tv for their firmware and follow the webosbrew.org guide.
+
+While rooting:
+
+- Quick Start+ must be off.
+- **The LG Developer Mode app must be uninstalled before any reboot after rooting.** Otherwise it wipes
+  `/media/developer`, including Homebrew Channel, and they have to root again.
+
+After root, follow the README's "Rooted TVs" section in order:
+
+1. **Secure SSH.** Homebrew's root SSH password is `alpine` until `/home/root/.ssh/authorized_keys` exists, and
+   `passwd` fails because `/etc` is read only. Make a key with `ssh-keygen`, copy the `.pub` to that file, test key
+   login, then reboot the TV. Verify afterwards over the key that `/etc/shadow` no longer has a bind mount
+   (`grep " /etc/shadow " /proc/mounts` prints nothing). Never type a password yourself; the user types `alpine`
+   that last time in their own terminal. Don't read or list their `~/.ssh` folder unless they ask.
+2. **Startup screen.** Package the app, then
+   `python tools/rooted/make_bundle.py <ipk> homeboard-setup.sh` and run it with
+   `ssh -i <key> root@<TV_IP> sh -s < homeboard-setup.sh` (on Windows inside `cmd /c "..."`). Expect `INSTALLED`,
+   `WATCHER RUNNING`, `== done`. It installs through `luna://com.webos.appInstallService/dev/install` and adds
+   `/var/lib/webosbrew/init.d/homeboard` (source: `tools/rooted/homeboard-autostart.sh`), which opens the app
+   20 s after boot and after every wake from standby. Its log is `/var/run/homeboard-watch.log`.
+3. **Optional:** LG Input Hook mapping a remote button to
+   `luna-send -n 1 luna://com.webos.applicationManager/launch '{"id":"dev.homeboard.launcher"}'`.
+
+Firmware updates can remove root; suggest turning off automatic updates.

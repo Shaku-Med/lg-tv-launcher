@@ -47,10 +47,12 @@
     motion: raw.motion !== false,
     theme: THEMES.indexOf(raw.theme) >= 0 ? raw.theme : "dark",
     ambientMs: (num(raw.ambientMinutes, 0, 120) || 0) * 60000,
-    wallpapers: (Array.isArray(raw.wallpapers) ? raw.wallpapers : []).filter(function (w) {
+    wallpapers: (Array.isArray(raw.wallpapers) ? raw.wallpapers : [])
+      .concat(Array.isArray(window.LAUNCHER_WALLPAPERS) ? window.LAUNCHER_WALLPAPERS : []).filter(function (w) {
       return typeof w === "string" && WALL_RE.test(w);
     }).slice(0, 100),
     wallpaperMs: (num(raw.wallpaperSeconds, 10, 86400) || 60) * 1000,
+    slideMs: (num(raw.slideshowSeconds, 4, 3600) || 12) * 1000,
     apps: appList(raw.apps),
     inputs: appList(raw.inputs)
   };
@@ -525,14 +527,24 @@
   var wallFront = $("wallA");
   var wallBack = $("wallB");
 
+  var wallTimer = null;
+
+  function scheduleWallpaper(ms) {
+    clearTimeout(wallTimer);
+    if (CFG.wallpapers.length > 1) wallTimer = setTimeout(nextWallpaper, ms);
+  }
+
   function nextWallpaper() {
     if (!CFG.wallpapers.length) { stage.classList.add("no-wall"); return; }
     wallIndex = (wallIndex + 1) % CFG.wallpapers.length;
     var src = "wallpapers/" + encodeURIComponent(CFG.wallpapers[wallIndex]);
+    var zoomClass = wallIndex % 2 ? "zoom-b" : "zoom-a";
     var img = new Image();
     img.onload = function () {
       wallBack.style.backgroundImage = 'url("' + src + '")';
-      wallBack.classList.add("is-visible");
+      wallBack.classList.remove("zoom-a", "zoom-b", "is-visible");
+      void wallBack.offsetWidth; // restart the zoom for this slide
+      wallBack.classList.add(zoomClass, "is-visible");
       wallFront.classList.remove("is-visible");
       var t = wallFront; wallFront = wallBack; wallBack = t;
       stage.classList.remove("no-wall");
@@ -542,7 +554,7 @@
       stage.classList.add("no-wall");
     };
     img.src = src;
-    if (CFG.wallpapers.length > 1) setTimeout(nextWallpaper, CFG.wallpaperMs);
+    scheduleWallpaper(ambient ? CFG.slideMs : CFG.wallpaperMs);
   }
 
   // ---------- ambient mode ----------
@@ -559,10 +571,12 @@
     if (overlayOpen) closeAllApps();
     ambient = true;
     stage.classList.add("ambient");
+    scheduleWallpaper(2500); // start the slideshow with a fresh photo
   }
   function exitAmbient() {
     ambient = false;
     stage.classList.remove("ambient");
+    scheduleWallpaper(CFG.wallpaperMs);
     resetIdle();
   }
 
